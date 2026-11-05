@@ -1,6 +1,9 @@
 package net.Sokra21.WRising;
 
+import net.Sokra21.WRising.Werewolf.WerewolfStage;
+import net.Sokra21.WRising.Werewolf.ModAttachments;
 import net.neoforged.bus.api.Event;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -30,6 +33,10 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.Sokra21.WRising.Werewolf.ModAttachments;
+import net.Sokra21.WRising.Werewolf.WerewolfStage;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(WRising.MODID)
@@ -43,6 +50,8 @@ public class WRising {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
+        net.Sokra21.WRising.Werewolf.ModAttachments.ATTACHMENTS.register(modEventBus);
+
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
@@ -55,11 +64,8 @@ public class WRising {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
-    private void addCreative(Event event) {
-
-    }
-
     private void commonSetup(FMLCommonSetupEvent event) {
+        LOGGER.info("Esta talla ha cargado chaval");
 
     }
 
@@ -72,5 +78,12 @@ public class WRising {
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
 
+        }
+    @SubscribeEvent
+    public void onPLayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        WerewolfStage stage = event.getEntity().getData(net.Sokra21.WRising.Werewolf.ModAttachments.STAGE);
+        LOGGER.info("Stage of {}: {}", event.getEntity() .getName().getString(), stage);
+
     }
+
 }
