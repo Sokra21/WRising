@@ -55,10 +55,6 @@ public class WRising {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
-    private void addCreative(Event event) {
-
-    }
-
     private void commonSetup(FMLCommonSetupEvent event) {
 
     }
