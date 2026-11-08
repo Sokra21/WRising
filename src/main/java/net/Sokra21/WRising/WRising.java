@@ -36,6 +36,12 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.Sokra21.WRising.Werewolf.ModAttachments;
 import net.Sokra21.WRising.Werewolf.WerewolfStage;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import java.util.Arrays;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
@@ -84,6 +90,29 @@ public class WRising {
         WerewolfStage stage = event.getEntity().getData(net.Sokra21.WRising.Werewolf.ModAttachments.STAGE);
         LOGGER.info("Stage of {}: {}", event.getEntity() .getName().getString(), stage);
 
+    }
+
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        event.getDispatcher().register(
+                Commands.literal("wrising")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.argument("stage", StringArgumentType.word())
+                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
+                                        Arrays.stream(WerewolfStage.values()).map(s -> s.name().toLowerCase()), builder))
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                    String nombre = StringArgumentType.getString(ctx, "stage").toUpperCase();
+                                    try {
+                                        WerewolfStage stage = WerewolfStage.valueOf(nombre);
+                                        player.setData(ModAttachments.STAGE, stage);
+                                        ctx.getSource().sendSuccess(() -> Component.literal("Stage changed to " + stage), false);
+                                        return 1;
+                                    } catch (IllegalArgumentException e) {
+                                        ctx.getSource().sendFailure(Component.literal("Not valid stage"));
+                                        return 0;
+                                    }
+                                })));
     }
 
 }
