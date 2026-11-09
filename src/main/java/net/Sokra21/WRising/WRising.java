@@ -1,7 +1,10 @@
 package net.Sokra21.WRising;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.Sokra21.WRising.Werewolf.WerewolfStage;
 import net.Sokra21.WRising.Werewolf.ModAttachments;
+import net.minecraft.commands.CommandSourceStack;
 import net.neoforged.bus.api.Event;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import org.slf4j.Logger;
@@ -94,6 +97,18 @@ public class WRising {
 
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
+
+        event.getDispatcher().register(
+                Commands.literal("transform")
+                        .requires(source -> source.hasPermission(2))
+                        .executes(ctx -> {
+                            ServerPlayer player = ctx.getSource().getPlayerOrException();
+                            boolean newState = !player.getData(ModAttachments.TRANSFORMED);
+                            player.setData(ModAttachments.TRANSFORMED, newState);
+                            ctx.getSource().sendSuccess(() -> Component.literal(newState ? "Transformed" : "Human"), false);
+                            return 1;
+                        }));
+
         event.getDispatcher().register(
                 Commands.literal("wrising")
                         .requires(source -> source.hasPermission(2))
@@ -102,17 +117,16 @@ public class WRising {
                                         Arrays.stream(WerewolfStage.values()).map(s -> s.name().toLowerCase()), builder))
                                 .executes(ctx -> {
                                     ServerPlayer player = ctx.getSource().getPlayerOrException();
-                                    String nombre = StringArgumentType.getString(ctx, "stage").toUpperCase();
+                                    String stageName = StringArgumentType.getString(ctx, "stage").toUpperCase();
                                     try {
-                                        WerewolfStage stage = WerewolfStage.valueOf(nombre);
+                                        WerewolfStage stage = WerewolfStage.valueOf(stageName);
                                         player.setData(ModAttachments.STAGE, stage);
                                         ctx.getSource().sendSuccess(() -> Component.literal("Stage changed to " + stage), false);
                                         return 1;
                                     } catch (IllegalArgumentException e) {
-                                        ctx.getSource().sendFailure(Component.literal("Not valid stage"));
+                                        ctx.getSource().sendFailure(Component.literal("Invalid stage"));
                                         return 0;
                                     }
                                 })));
     }
-
 }
